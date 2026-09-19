@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="theme-color" content="#111B36"/>
+  <title>黑马商城管理系统</title>
+
+  <!-- Element UI 基础样式（商品管理表格 / 弹窗 / 分页仍在使用） -->
+  <link rel="stylesheet" href="./css/element.css"/>
+  <!-- 后台设计系统：深色侧栏 + 浅色工作区，并把 Element 主色统一到品牌蓝 #315EFB -->
+  <link rel="stylesheet" href="./css/admin-design-system.css?v=20260920"/>
+</head>
+
+<body>
+
+<div id="app" v-cloak>
+  <div class="hm-admin" :class="{ 'is-mini': adminState.mini }">
+
+    <!-- ============================ 侧栏 ============================ -->
+    <aside class="hm-admin__side">
+      <a class="hm-admin__brand" href="#/index">
+        <span class="hm-admin__brand-mark">
+          <img src="./images/black-horse-mark.svg" alt="黑马商城"/>
+        </span>
+        <span class="hm-admin__brand-text">
+          <b>黑马商城</b>
+          <span>ADMIN CONSOLE</span>
+        </span>
+      </a>
+
+      <menu-list></menu-list>
+
+      <div class="hm-admin__side-foot">© 2026 黑马商城管理系统</div>
+    </aside>
+
+    <!-- ============================ 主区 ============================ -->
+    <div class="hm-admin__main">
+      <banner></banner>
+
+      <div class="hm-admin__content">
+        <div class="hm-admin__page">
+          <router-view v-if="util.isRouteAlive"></router-view>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/common.js?v=20260920"></script>
+<script src="./js/admin-ui.js?v=20260920"></script>
+<script src="./js/echarts.js"></script>
+<script src="./js/element.js"></script>
+<script src="./js/view-router.js?v=20260920"></script>
+
+<!-- 侧栏菜单 + 顶栏（跨组件共享 mini / 当前路由状态） -->
+<script src="./js/pages/menu.js?v=20260920"></script>
+<script src="./js/pages/banner.js?v=20260920"></script>
+
+<!-- 路由页面组件 -->
+<script src="./js/pages/index.js?v=20260920"></script>
+<script src="./js/pages/goods/list.js?v=20260920"></script>
+
+<script>
+  // 跨组件共享的轻量状态（Vue 2.5 没有 Vue.observable，用一个极简 Vue 实例充当响应式 store）
+  window.adminState = new Vue({ data: { mini: false } });
+
+  Vue.use(ViewRouter);
+
+  const router = new ViewRouter({
+    routes: [
+      { path: "/", component: Dashboard },
+      { path: "/index", component: Dashboard },
+      { path: "/goods/list", component: GoodsList }
+    ]
+  });
+
+  new Vue({
+    router,
+    el: "#app",
+    data: {
+      util,
+      adminState: window.adminState
+    }
+  });
+</script>
+
+</body>
+
+</html>

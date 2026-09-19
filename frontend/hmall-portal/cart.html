@@ -215,7 +215,7 @@
                 <input type="checkbox"
                        v-model="selectedCarts"
                        :value="c"
-                       :disabled="c.status !== 1 || c.stock <= c.num"
+                       :disabled="(c.status != null && c.status !== 1) || c.stock < c.num"
                        :aria-label="'选择 ' + c.name"/>
               </label>
 
@@ -237,11 +237,11 @@
                   <span class="hm-tag hm-tag--success" v-if="c.newPrice && c.newPrice < c.price">
                     降价 ￥{{ price(c.price - c.newPrice) }}
                   </span>
-                  <span class="hm-tag hm-tag--danger" v-if="c.status !== 1">已下架</span>
-                  <span class="hm-tag hm-tag--warn" v-if="c.status === 1 && c.num > c.stock">
+                  <span class="hm-tag hm-tag--danger" v-if="c.status != null && c.status !== 1">已下架</span>
+                  <span class="hm-tag hm-tag--warn" v-if="(c.status == null || c.status === 1) && c.num > c.stock">
                     库存不足（仅剩 {{ c.stock }} 件）
                   </span>
-                  <span class="hm-tag hm-tag--muted" v-if="c.status === 1 && c.stock > c.num">
+                  <span class="hm-tag hm-tag--muted" v-if="(c.status == null || c.status === 1) && c.stock >= c.num">
                     库存 {{ c.stock }} 件
                   </span>
                 </div>
@@ -268,7 +268,7 @@
                         aria-label="减少数量">−</button>
                 <input type="text" inputmode="numeric" v-model.number="c.num"
                        @change="commitNum(c)"
-                       :disabled="c.status !== 1" :aria-label="'数量，' + c.name"/>
+                       :disabled="c.status != null && c.status !== 1" :aria-label="'数量，' + c.name"/>
                 <button type="button" @click="increment(c)" :disabled="c.num >= c.stock || busy"
                         aria-label="增加数量">+</button>
               </div>

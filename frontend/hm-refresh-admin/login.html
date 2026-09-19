@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="theme-color" content="#111B36"/>
+  <title>登录 · 黑马商城管理系统</title>
+  <meta name="description" content="黑马商城管理后台登录。"/>
+
+  <!-- Element UI 基础样式（商品管理表格等组件仍在使用） -->
+  <link rel="stylesheet" href="./css/element.css"/>
+  <!-- 后台设计系统：深色侧栏 + 浅色工作区，并统一 Element 主色 -->
+  <link rel="stylesheet" href="./css/admin-design-system.css?v=20260920"/>
+</head>
+
+<body class="hm-adm-auth">
+
+<div id="app" v-cloak>
+  <div class="hm-login">
+
+    <!-- ==================================================================
+         左：品牌区
+         ================================================================== -->
+    <section class="hm-login__brand">
+      <a class="hm-login__logo" href="/index.html">
+        <span class="hm-admin__brand-mark">
+          <img src="./images/black-horse-mark.svg" alt="黑马商城"/>
+        </span>
+        <span>
+          <b>黑马商城</b>
+          <span>ADMIN CONSOLE</span>
+        </span>
+      </a>
+
+      <div class="hm-login__pitch">
+        <h1>把商品和订单，<br/><strong>放进一个清爽的台面。</strong></h1>
+        <p>黑马商城管理系统用于维护商品资料与上下架状态，所有数据都来自真实的商品服务接口。</p>
+
+        <ul class="hm-login__points">
+          <li><i>1</i><span>商品分页查询：支持 ID、分类、品牌筛选</span></li>
+          <li><i>2</i><span>上下架 / 编辑 / 删除，全流程走真实接口</span></li>
+          <li><i>3</i><span>数据概览统计直接读商品库，不使用假数据</span></li>
+        </ul>
+      </div>
+
+      <p class="hm-login__foot">© 2026 黑马商城管理系统 · 教学演示项目</p>
+    </section>
+
+    <!-- ==================================================================
+         右：登录表单
+         ================================================================== -->
+    <section class="hm-login__form-side">
+      <div class="hm-login__card">
+
+        <div class="hm-login__card-head">
+          <h2>管理后台登录</h2>
+          <p>请使用商城账号登录，登录态与前台共用。</p>
+        </div>
+
+        <!-- 已登录提示 -->
+        <div class="hm-notice hm-notice--info" style="margin-bottom: 20px" v-if="currentUser">
+          <span aria-hidden="true">·</span>
+          <span>
+            当前已登录为 <b>{{ currentUser.username }}</b>，
+            <a href="javascript:;" @click.prevent="continueAs">直接进入后台 →</a>
+          </span>
+        </div>
+
+        <!-- 错误提示 -->
+        <div class="hm-notice hm-notice--danger" style="margin-bottom: 18px" role="alert" v-if="error">
+          <span aria-hidden="true">!</span>
+          <span>{{ error }}</span>
+        </div>
+
+        <form @submit.prevent="handleLogin" novalidate>
+          <div class="hm-field">
+            <label class="hm-label" for="username">用户名</label>
+            <div class="hm-control" :class="{ 'is-error': fieldError.username }">
+              <span class="hm-control__icon" aria-hidden="true">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.9" stroke-linecap="round">
+                  <circle cx="12" cy="8" r="3.6"></circle>
+                  <path d="M4.8 20a7.2 7.2 0 0 1 14.4 0"></path>
+                </svg>
+              </span>
+              <input id="username" ref="username" type="text" v-model.trim="loginForm.username"
+                     autocomplete="username" placeholder="请输入用户名"/>
+            </div>
+            <p class="hm-hint" v-if="fieldError.username">用户名不能为空</p>
+          </div>
+
+          <div class="hm-field">
+            <label class="hm-label" for="password">密码</label>
+            <div class="hm-control" :class="{ 'is-error': fieldError.password }">
+              <span class="hm-control__icon" aria-hidden="true">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.9" stroke-linecap="round">
+                  <rect x="4.5" y="10.5" width="15" height="9.5" rx="2.4"></rect>
+                  <path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7"></path>
+                </svg>
+              </span>
+              <input id="password" :type="pwdType" v-model="loginForm.password"
+                     autocomplete="current-password" placeholder="请输入密码"
+                     @keyup.enter="handleLogin"/>
+              <button type="button" class="hm-control__suffix" @click="showPwd">
+                {{ pwdType === 'password' ? '显示' : '隐藏' }}
+              </button>
+            </div>
+            <p class="hm-hint" v-if="fieldError.password">密码不能为空</p>
+          </div>
+
+          <div class="hm-login__row">
+            <span>登录接口：POST /api/users/login</span>
+            <span>与前台共用账号体系</span>
+          </div>
+
+          <button type="submit" class="hm-btn hm-btn--primary hm-btn--block hm-login__submit"
+                  :disabled="loading">
+            {{ loading ? '正在登录…' : '登 录' }}
+          </button>
+        </form>
+
+        <p class="hm-hint" style="margin-top: 18px; text-align: center">
+          本教学项目用户服务未提供注册接口，账号请在数据库中维护。
+        </p>
+
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/common.js?v=20260920"></script>
+<script src="./js/admin-ui.js?v=20260920"></script>
+<script>
+  (function () {
+    "use strict";
+
+    /** 解析登录后要跳转的地址；登录页自身不能作为目标，否则死循环 */
+    function resolveReturnUrl() {
+      var stored = util.store.get("return-url");
+      if (stored && String(stored).indexOf("login.html") === -1) {
+        return stored;
+      }
+      var ref = document.referrer || "";
+      if (ref && ref.indexOf(location.origin) === 0 && ref.indexOf("login.html") === -1) {
+        util.store.set("return-url", ref);
+        return ref;
+      }
+      util.store.set("return-url", "/index.html");
+      return "/index.html";
+    }
+
+    new Vue({
+      el: "#app",
+
+      data: function () {
+        return {
+          loginForm: { username: "", password: "" },
+          pwdType: "password",
+          loading: false,
+          error: "",
+          fieldError: {},
+          currentUser: null,
+          returnUrl: "/index.html"
+        };
+      },
+
+      created: function () {
+        this.returnUrl = resolveReturnUrl();
+        this.currentUser = util.store.get("user-info");
+        var self = this;
+        this.$nextTick(function () {
+          if (self.$refs.username) {
+            self.$refs.username.focus();
+          }
+        });
+      },
+
+      methods: {
+        showPwd: function () {
+          this.pwdType = this.pwdType === "password" ? "text" : "password";
+        },
+
+        continueAs: function () {
+          window.location.href = this.returnUrl || "/index.html";
+        },
+
+        handleLogin: function () {
+          this.error = "";
+          this.fieldError = {};
+
+          var fe = {};
+          if (!this.loginForm.username) {
+            fe.username = true;
+          }
+          if (!this.loginForm.password) {
+            fe.password = true;
+          }
+          if (Object.keys(fe).length) {
+            this.fieldError = fe;
+            this.error = "请填写用户名和密码";
+            return;
+          }
+
+          var self = this;
+          this.loading = true;
+
+          // 响应拦截器返回完整 response，登录数据在 resp.data
+          axios.post("/users/login", {
+            username: this.loginForm.username,
+            password: this.loginForm.password,
+            rememberMe: true
+          })
+            .then(function (resp) {
+              var vo = resp && resp.data;
+              if (!vo || !vo.token) {
+                throw new Error("登录响应缺少 token 字段");
+              }
+              sessionStorage.setItem("token", vo.token);
+              var user = {};
+              Object.keys(vo).forEach(function (k) {
+                if (k !== "token") {
+                  user[k] = vo[k];
+                }
+              });
+              util.store.set("user-info", user);
+
+              hmAdmToast("登录成功，正在进入后台…", "success", 1400);
+              setTimeout(function () {
+                window.location.href = self.returnUrl || "/index.html";
+              }, 420);
+            })
+            .catch(function (err) {
+              self.loading = false;
+              var status = err && err.response && err.response.status;
+              self.error = (status === 401 || status === 400)
+                ? "用户名或密码错误，请重新输入"
+                : hmAdmErrorText(err, "登录失败，请稍后重试");
+            });
+        }
+      }
+    });
+  })();
+</script>
+
+</body>
+
+</html>
