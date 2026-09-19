@@ -1,0 +1,21 @@
+/* 长分类/品牌列表独立滚动，避免筛选栏拉长整个搜索页。 */
+@media (min-width: 801px) {
+  .ms-filter {
+    position: sticky;
+    top: 96px;
+    max-height: calc(100vh - 116px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  .ms-filter section {
+    max-height: 218px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .ms-filter section:last-child {
+    max-height: none;
+    overflow: visible;
+  }
+  .ms-filter section::-webkit-scrollbar { width: 5px; }
+  .ms-filter section::-webkit-scrollbar-thumb { background: #cbd5ea; border-radius: 99px; }
+}

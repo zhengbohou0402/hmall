@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="theme-color" content="#111B36"/>
+  <title>收银台 · 黑马商城</title>
+  <meta name="description" content="完成订单支付。"/>
+
+  <link rel="stylesheet" type="text/css" href="css/design-system.css?v=20260920"/>
+
+  <!-- 本页专属布局（不重复定义设计令牌 / 组件，仅排版） -->
+  <style>
+    .hm-pay-hero {
+      position: relative;
+      padding: 26px 28px;
+      border-radius: var(--hm-r-lg);
+      background: var(--hm-grad-brand);
+      color: #fff;
+      overflow: hidden;
+      box-shadow: 0 18px 42px rgba(49, 94, 251, 0.26);
+    }
+    .hm-pay-hero::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      top: -90px;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.14);
+    }
+    .hm-pay-hero > * {
+      position: relative;
+      z-index: 1;
+    }
+    .hm-pay-hero__label {
+      font-size: 12.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+    }
+    .hm-pay-hero__amount {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-top: 8px;
+      font-family: var(--hm-font-num);
+      font-size: 44px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+    }
+    .hm-pay-hero__amount i {
+      font-style: normal;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .hm-pay-hero__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 22px;
+      margin-top: 18px;
+      font-size: 12.5px;
+      color: rgba(255, 255, 255, 0.82);
+    }
+    .hm-pay-hero__meta b {
+      color: #fff;
+      font-family: var(--hm-font-num);
+      font-weight: 600;
+    }
+
+    .hm-pwd-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+    .hm-pwd-row .hm-control {
+      flex: 1 1 auto;
+    }
+  </style>
+</head>
+
+<body class="hm-page">
+
+<a class="hm-skip" href="#hm-main">跳到主要内容</a>
+
+<div id="payApp" v-cloak>
+
+  <hm-header></hm-header>
+
+  <main class="hm-main" id="hm-main">
+    <div class="hm-shell">
+
+      <nav class="hm-crumb" aria-label="面包屑">
+        <a href="/">首页</a>
+        <i>/</i>
+        <a href="/cart.html">我的购物车</a>
+        <i>/</i>
+        <b>收银台</b>
+      </nav>
+
+      <hm-steps :current="3"></hm-steps>
+
+      <!-- 缺少订单号 -->
+      <div class="hm-panel" v-if="!orderId">
+        <div class="hm-empty">
+          <span class="hm-empty__icon" aria-hidden="true">!</span>
+          <h3>没有指定要支付的订单</h3>
+          <p>地址栏缺少 <code>?id=订单号</code> 参数，无法打开收银台。</p>
+          <div class="hm-empty__actions">
+            <a class="hm-btn hm-btn--primary hm-btn--sm" href="/cart.html">返回购物车</a>
+            <a class="hm-btn hm-btn--ghost hm-btn--sm" href="/">返回首页</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 加载中 -->
+      <div class="hm-loading" v-else-if="loading">
+        <span class="hm-spinner" aria-hidden="true"></span>
+        <span>正在读取订单信息…</span>
+      </div>
+
+      <!-- 订单读取失败 -->
+      <div class="hm-panel" v-else-if="loadError">
+        <div class="hm-empty">
+          <span class="hm-empty__icon" aria-hidden="true">!</span>
+          <h3>订单信息读取失败</h3>
+          <p>{{ loadError }}</p>
+          <div class="hm-empty__actions">
+            <button class="hm-btn hm-btn--primary hm-btn--sm" type="button" @click="init">重新加载</button>
+            <a class="hm-btn hm-btn--ghost hm-btn--sm" href="/cart.html">返回购物车</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hm-split" v-else>
+
+        <!-- 左：订单信息 -->
+        <div class="hm-stack" style="gap: 20px">
+
+          <section class="hm-pay-hero">
+            <div class="hm-pay-hero__label">应付金额</div>
+            <div class="hm-pay-hero__amount">
+              <i>￥</i>{{ price(order.totalFee) }}
+            </div>
+            <div class="hm-pay-hero__meta">
+              <span>订单号 <b>{{ order.id }}</b></span>
+              <span v-if="order.createTime">下单时间 <b>{{ formatTime(order.createTime) }}</b></span>
+              <span>订单状态 <b>{{ statusText }}</b></span>
+            </div>
+          </section>
+
+          <!-- 已支付 / 已关闭 -->
+          <div class="hm-notice hm-notice--success" v-if="order.status === 2">
+            <span aria-hidden="true">✓</span>
+            <span>
+              该订单已支付完成。
+              <a class="hm-link" :href="'/paysuccess.html?orderId=' + order.id">查看支付结果 →</a>
+            </span>
+          </div>
+          <div class="hm-notice hm-notice--warn" v-else-if="order.status === 5">
+            <span aria-hidden="true">!</span>
+            <span>该订单已取消关闭，无法继续支付。请返回购物车重新下单。</span>
+          </div>
+
+          <section class="hm-panel">
+            <div class="hm-panel__head">
+              <div class="hm-panel__title">订单信息</div>
+              <span class="hm-tag" :class="'hm-tag--' + statusTagClass">{{ statusText }}</span>
+            </div>
+
+            <div style="margin-top: 14px">
+              <div class="hm-kv">
+                <span>订单编号</span>
+                <span class="hm-num">{{ order.id }}</span>
+              </div>
+              <div class="hm-kv">
+                <span>下单时间</span>
+                <span>{{ formatTime(order.createTime) }}</span>
+              </div>
+              <div class="hm-kv">
+                <span>订单金额</span>
+                <span class="hm-num">￥{{ price(order.totalFee) }}</span>
+              </div>
+              <div class="hm-kv">
+                <span>支付方式</span>
+                <span>{{ paymentTypeText }}</span>
+              </div>
+              <div class="hm-kv" v-if="order.payTime">
+                <span>支付时间</span>
+                <span>{{ formatTime(order.payTime) }}</span>
+              </div>
+            </div>
+
+            <div class="hm-notice hm-notice--info" style="margin-top: 18px">
+              <span aria-hidden="true">·</span>
+              <span>
+                支付单由后端 <code>POST /pay-orders</code> 真实创建，当前账套仅支持
+                <b>余额支付</b>（PayType = BALANCE）。
+              </span>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- 右：支付操作 -->
+        <aside class="hm-panel hm-panel--sticky">
+
+          <div class="hm-panel__title" style="margin-bottom: 18px">余额支付</div>
+
+          <!-- 不可支付：订单已不是「未付款」，或后端已明确拒绝创建支付单 -->
+          <div class="hm-empty" v-if="payDisabled" style="padding: 28px 8px">
+            <span class="hm-empty__icon" aria-hidden="true">!</span>
+            <h3>{{ payDisabledTitle }}</h3>
+            <p>{{ payDisabledHint }}</p>
+            <div class="hm-empty__actions">
+              <a class="hm-btn hm-btn--primary hm-btn--sm" href="/cart.html">返回购物车</a>
+              <a class="hm-btn hm-btn--muted hm-btn--sm"
+                 v-if="order && order.status === 2"
+                 :href="'/paysuccess.html?orderId=' + order.id">查看支付结果</a>
+            </div>
+          </div>
+
+          <!-- 正常支付 -->
+          <template v-else>
+
+            <div class="hm-sum-line">
+              <span>账户余额</span>
+              <b>{{ balanceText }}</b>
+            </div>
+            <div class="hm-sum-line">
+              <span>本次支付</span>
+              <b class="hm-num">￥{{ price(order.totalFee) }}</b>
+            </div>
+
+            <div class="hm-sum-line hm-sum-line--total">
+              <span>应付金额</span>
+              <b class="hm-num">￥{{ price(order.totalFee) }}</b>
+            </div>
+
+            <!-- 支付单创建状态 -->
+            <div class="hm-loading" v-if="creatingPayOrder" style="padding: 22px">
+              <span class="hm-spinner" aria-hidden="true"></span>
+              <span>正在创建支付单…</span>
+            </div>
+
+            <div class="hm-error" v-else-if="payOrderError" style="margin-top: 16px">
+              <span aria-hidden="true">!</span>
+              <span>{{ payOrderError }}</span>
+            </div>
+
+            <div v-else style="margin-top: 18px">
+              <label class="hm-label" for="payPassword">支付密码</label>
+              <div class="hm-pwd-row" style="margin-top: 8px">
+                <div class="hm-control" :class="{ 'is-error': pwdError }">
+                  <input id="payPassword"
+                         :type="showPwd ? 'text' : 'password'"
+                         v-model="password"
+                         maxlength="32"
+                         autocomplete="off"
+                         placeholder="请输入支付密码"
+                         @keydown.enter.prevent="payByBalance"/>
+                  <button type="button" class="hm-control__suffix" @click="showPwd = !showPwd">
+                    {{ showPwd ? '隐藏' : '显示' }}
+                  </button>
+                </div>
+              </div>
+              <p class="hm-hint" style="margin-top: 8px" v-if="pwdError">请输入支付密码</p>
+              <p class="hm-hint" style="margin-top: 8px" v-else>
+                支付密码由 user-service 校验；连续输错会被后端拒绝。
+              </p>
+
+              <button type="button"
+                      class="hm-btn hm-btn--primary hm-btn--lg hm-btn--block"
+                      style="margin-top: 18px"
+                      :class="{ 'is-loading': paying }"
+                      :disabled="paying"
+                      @click="payByBalance">
+                {{ paying ? '正在支付…' : '确认支付 ￥' + price(order.totalFee) }}
+              </button>
+
+              <a class="hm-btn hm-btn--ghost hm-btn--block"
+                 style="margin-top: 10px" href="/cart.html">
+                取消并返回购物车
+              </a>
+            </div>
+
+          </template>
+
+        </aside>
+
+      </div>
+    </div>
+  </main>
+
+  <hm-footer></hm-footer>
+
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/common.js?v=20260920"></script>
+<script src="./js/modern-ui.js?v=20260920"></script>
+<script src="./js/modern-pay.js?v=20260920"></script>
+
+</body>
+
+</html>

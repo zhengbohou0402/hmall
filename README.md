@@ -57,7 +57,7 @@ java -jar hm-gateway/target/hm-gateway.jar --server.port=19000
 
 ## 前端
 
-静态前端位于同级目录 `../hmall-nginx/html`，由 Nginx 提供：
+用户商城静态前端源码已收录在 [`frontend/hmall-portal`](frontend/hmall-portal)，部署目录可映射到 Nginx 的 `html/hmall-portal`。本机运行时的静态前端仍位于同级目录 `../hmall-nginx/html`，由 Nginx 提供：
 
 - 用户商城：`http://localhost:18080`
 - 后台管理：`http://localhost:18082`
