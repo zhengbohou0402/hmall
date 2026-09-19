@@ -110,7 +110,8 @@ public class SearchServiceImpl extends ServiceImpl<SearchMapper, Item> implement
         searchRequest.source().trackTotalHits(true);
 
         if(query.getKey() != null && !query.getKey().isEmpty()) {
-            boolQueryBuilder.must(QueryBuilders.matchQuery("name", query.getKey()));
+            boolQueryBuilder.must(QueryBuilders.matchQuery("name", query.getKey())
+                    .operator(org.elasticsearch.index.query.Operator.AND));
         }
 
         //高亮
