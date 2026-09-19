@@ -1,0 +1,16 @@
+server:
+  port: 8081
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+hm:
+  db:
+    database: hm-item
+    un: root
+    pw: 123456
+  swagger:
+    title: "黑马商城商品服务接口文档"
+    package: com.hmall.item.controller

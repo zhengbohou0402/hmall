@@ -1,0 +1,16 @@
+server:
+  port: 8088
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+hm:
+  db:
+    database: hm-seckill
+    un: root
+    pw: 123456
+  swagger:
+    title: "黑马商城秒杀服务接口文档"
+    package: com.hmall.seckill.controller

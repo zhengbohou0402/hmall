@@ -1,0 +1,23 @@
+server:
+  port: 8085            # server 是顶级键，port 是其子键
+
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    virtual-host: /hmall
+    username: hmall
+    password: 123
+
+hm:                     # hm 是顶级键
+  db:                   # db 是 hm 的子键
+    database: hm-trade   # database、un、pw 是 db 的子键
+    un: root
+    pw: 123456
+  swagger:              # swagger 是 hm 的子键
+    title: "黑马商城交易服务接口文档"     # title、package 是 swagger 的子键
+    package: com.hmall.trade.controller
+
+
+
+# keytool -genkeypair -alias hmall -keyalg RSA -keypass hmall123 -keystore hmall.jks -storepass hmall123

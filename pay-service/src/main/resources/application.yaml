@@ -1,0 +1,10 @@
+server:
+  port: 8086
+hm:
+  db:
+    database: hm-pay
+    un: root
+    pw: 123456
+  swagger:
+    tittle: "黑马用户支付文档"
+    package: com.hmall.pay.controller

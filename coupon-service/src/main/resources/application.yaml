@@ -1,0 +1,16 @@
+server:
+  port: 8091
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+hm:
+  db:
+    database: hm-coupon
+    un: root
+    pw: 123456
+  swagger:
+    title: "黑马商城优惠券服务接口文档"
+    package: com.hmall.coupon.controller
