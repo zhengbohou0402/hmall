@@ -18,8 +18,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.web.bind.annotation.*;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "商品管理相关接口")
 @RestController
@@ -43,6 +46,33 @@ public class ItemController {
                 .le(query.getMaxPrice() != null, Item::getPrice, query.getMaxPrice())
                 .page(query.toMpPage("update_time", false));
         return PageDTO.of(page, ItemDTO.class);
+    }
+
+    @Operation(summary = "后台经营概览真实统计")
+    @GetMapping("/admin/overview")
+    public Map<String, Object> overview() {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("total", itemService.count());
+        result.put("onSale", itemService.lambdaQuery().eq(Item::getStatus, 1).count());
+        result.put("offSale", itemService.lambdaQuery().eq(Item::getStatus, 2).count());
+        result.put("lowStock", itemService.lambdaQuery()
+                .eq(Item::getStatus, 1)
+                .le(Item::getStock, 10)
+                .count());
+
+        QueryWrapper<Item> categoryQuery = new QueryWrapper<Item>()
+                .select("COALESCE(category, '未分类') AS category", "COUNT(*) AS count")
+                .groupBy("category")
+                .orderByDesc("count")
+                .last("LIMIT 12");
+        result.put("categories", itemService.listMaps(categoryQuery));
+        result.put("lowStockItems", itemService.lambdaQuery()
+                .eq(Item::getStatus, 1)
+                .le(Item::getStock, 10)
+                .orderByAsc(Item::getStock)
+                .last("LIMIT 6")
+                .list());
+        return result;
     }
 
     @Operation(summary = "根据id查询商品")
