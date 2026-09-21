@@ -1,0 +1,1219 @@
+/* ==========================================================================
+   黑马商城 · 管理后台设计系统  admin-design-system.css
+   --------------------------------------------------------------------------
+   被 hm-refresh-admin/login.html 与 index.html 引用。
+   视觉结构：深色侧栏（#111B36 渐变） + 浅色工作区（#F4F7FB） + 白色内容卡。
+   品牌一致性：与用户端 design-system.css 共用同一套色板与圆角/阴影语言，
+   并把 Element UI 的默认主色 #409EFF 统一覆写为品牌蓝 #315EFB。
+   选择器约定：Element UI 覆写统一加 #app 前缀（权重 (1,1,0) 高于 (0,1,0)），
+   保证本文件在 element.css 之后加载时能稳定生效，无需 !important。
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. 设计令牌
+   ========================================================================== */
+:root {
+  /* 主色 */
+  --hm-ink: #111B36;
+  --hm-ink-700: #1B2745;
+  --hm-ink-500: #2A3A63;
+  --hm-blue: #315EFB;
+  --hm-blue-700: #2547D0;
+  --hm-blue-soft: #E8EEFF;
+  --hm-violet: #7C4DFF;
+  --hm-violet-soft: #F1EBFF;
+
+  /* 中性 */
+  --hm-bg: #F4F7FB;
+  --hm-card: #FFFFFF;
+  --hm-text: #1B2437;
+  --hm-text-2: #4A5570;
+  --hm-muted: #65708A;
+  --hm-line: rgba(17, 27, 54, 0.08);
+  --hm-line-strong: rgba(17, 27, 54, 0.14);
+
+  /* 语义 */
+  --hm-danger: #D92D20;
+  --hm-danger-soft: #FEF3F2;
+  --hm-success: #0E9F6E;
+  --hm-success-soft: #ECFDF5;
+  --hm-warn: #B54708;
+  --hm-warn-soft: #FFFAEB;
+
+  /* 渐变 / 圆角 / 阴影 */
+  --hm-grad-brand: linear-gradient(135deg, #315EFB 0%, #7C4DFF 100%);
+  --hm-grad-side: linear-gradient(178deg, #16214A 0%, #111B36 58%, #0D1630 100%);
+  --hm-r-xs: 8px;
+  --hm-r-sm: 12px;
+  --hm-r-md: 18px;
+  --hm-r-lg: 24px;
+  --hm-r-pill: 999px;
+  --hm-shadow-1: 0 1px 2px rgba(17, 27, 54, 0.04), 0 6px 18px rgba(17, 27, 54, 0.06);
+  --hm-shadow-2: 0 10px 30px rgba(17, 27, 54, 0.10), 0 2px 6px rgba(17, 27, 54, 0.05);
+  --hm-shadow-3: 0 22px 60px rgba(17, 27, 54, 0.16);
+  --hm-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  --hm-side-w: 236px;
+  --hm-side-w-mini: 68px;
+  --hm-topbar-h: 62px;
+
+  --hm-font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑",
+             -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --hm-font-num: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+
+
+/* ==========================================================================
+   2. 基础重置
+   ========================================================================== */
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--hm-bg);
+  color: var(--hm-text);
+  font-family: var(--hm-font);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#app {
+  height: 100%;
+}
+
+a {
+  color: var(--hm-blue);
+  text-decoration: none;
+}
+
+[v-cloak] {
+  display: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--hm-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+
+/* ==========================================================================
+   3. 应用外壳：深色侧栏 + 浅色工作区
+   ========================================================================== */
+.hm-admin {
+  display: flex;
+  height: 100%;
+  min-height: 100vh;
+  background: var(--hm-bg);
+}
+
+/* ---------------------------- 侧栏 ---------------------------- */
+.hm-admin__side {
+  flex: 0 0 var(--hm-side-w);
+  width: var(--hm-side-w);
+  background: var(--hm-grad-side);
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  transition: flex-basis 0.24s var(--hm-ease), width 0.24s var(--hm-ease);
+  overflow: hidden;
+}
+
+.hm-admin__brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  height: var(--hm-topbar-h);
+  padding: 0 20px;
+  flex: 0 0 auto;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.hm-admin__brand-mark {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 18px rgba(49, 94, 251, 0.34);
+}
+.hm-admin__brand-mark img {
+  width: 100%;
+  height: 100%;
+}
+.hm-admin__brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.hm-admin__brand-text b {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+.hm-admin__brand-text span {
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.hm-admin__nav {
+  flex: 1 1 auto;
+  padding: 16px 12px;
+  overflow-y: auto;
+}
+.hm-admin__nav-group {
+  padding: 14px 12px 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.32);
+  white-space: nowrap;
+}
+.hm-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  height: 44px;
+  padding: 0 13px;
+  margin-bottom: 3px;
+  border-radius: var(--hm-r-sm);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.18s var(--hm-ease), color 0.18s var(--hm-ease);
+}
+.hm-nav-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+.hm-nav-item.is-active {
+  background: var(--hm-grad-brand);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(49, 94, 251, 0.3);
+}
+.hm-nav-item.is-active::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  border-radius: var(--hm-r-pill);
+  background: #fff;
+}
+.hm-nav-item__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+}
+.hm-nav-item__icon svg {
+  width: 18px;
+  height: 18px;
+}
+.hm-nav-item__text {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hm-nav-item__badge {
+  flex: 0 0 auto;
+  padding: 1px 7px;
+  border-radius: var(--hm-r-pill);
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--hm-font-num);
+}
+.hm-nav-item.is-active .hm-nav-item__badge {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.hm-admin__side-foot {
+  flex: 0 0 auto;
+  padding: 14px 16px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.34);
+  white-space: nowrap;
+}
+
+/* 折叠态：仅图标 */
+.hm-admin.is-mini .hm-admin__side {
+  flex-basis: var(--hm-side-w-mini);
+  width: var(--hm-side-w-mini);
+}
+.hm-admin.is-mini .hm-admin__brand {
+  justify-content: center;
+  padding: 0;
+}
+.hm-admin.is-mini .hm-admin__brand-text,
+.hm-admin.is-mini .hm-nav-item__text,
+.hm-admin.is-mini .hm-nav-item__badge,
+.hm-admin.is-mini .hm-admin__nav-group,
+.hm-admin.is-mini .hm-admin__side-foot {
+  display: none;
+}
+.hm-admin.is-mini .hm-nav-item {
+  justify-content: center;
+  padding: 0;
+  gap: 0;
+}
+
+/* ---------------------------- 主区 ---------------------------- */
+.hm-admin__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.hm-admin__topbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: var(--hm-topbar-h);
+  padding: 0 24px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--hm-line);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.hm-admin__toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--hm-line-strong);
+  border-radius: var(--hm-r-sm);
+  background: #fff;
+  color: var(--hm-text-2);
+  cursor: pointer;
+  transition: border-color 0.18s var(--hm-ease), color 0.18s var(--hm-ease);
+}
+.hm-admin__toggle:hover {
+  border-color: var(--hm-blue);
+  color: var(--hm-blue);
+}
+
+.hm-admin__title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  min-width: 0;
+}
+.hm-admin__title b {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--hm-ink);
+}
+.hm-admin__title span {
+  font-size: 11.5px;
+  color: var(--hm-muted);
+}
+
+.hm-admin__topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hm-admin__user {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 38px;
+  padding: 0 14px 0 6px;
+  border: 1px solid var(--hm-line-strong);
+  border-radius: var(--hm-r-pill);
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.18s var(--hm-ease);
+}
+.hm-admin__user:hover {
+  border-color: var(--hm-blue);
+}
+.hm-admin__avatar {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: var(--hm-grad-brand);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.hm-admin__user b {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hm-text);
+}
+.hm-admin__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 170px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid var(--hm-line);
+  border-radius: var(--hm-r-sm);
+  box-shadow: var(--hm-shadow-2);
+  z-index: 50;
+}
+.hm-admin__menu button {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: var(--hm-r-xs);
+  background: transparent;
+  color: var(--hm-text);
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.hm-admin__menu button:hover {
+  background: var(--hm-blue-soft);
+  color: var(--hm-blue);
+}
+.hm-admin__menu hr {
+  margin: 5px 8px;
+  border: 0;
+  border-top: 1px solid var(--hm-line);
+}
+
+.hm-admin__content {
+  flex: 1 1 auto;
+  padding: 24px;
+  min-width: 0;
+}
+.hm-admin__page {
+  max-width: 1440px;
+}
+
+
+/* ==========================================================================
+   4. 通用后台组件
+   ========================================================================== */
+.hm-panel {
+  padding: 22px 24px;
+  background: var(--hm-card);
+  border: 1px solid var(--hm-line);
+  border-radius: var(--hm-r-md);
+  box-shadow: var(--hm-shadow-1);
+}
+.hm-panel + .hm-panel {
+  margin-top: 18px;
+}
+.hm-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--hm-line);
+}
+.hm-panel__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--hm-ink);
+}
+.hm-panel__title::before {
+  content: "";
+  width: 4px;
+  height: 16px;
+  border-radius: var(--hm-r-pill);
+  background: var(--hm-grad-brand);
+}
+.hm-panel__title small {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--hm-muted);
+}
+.hm-panel--flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* 统计卡 */
+.hm-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.hm-stat {
+  position: relative;
+  padding: 20px 22px;
+  background: var(--hm-card);
+  border: 1px solid var(--hm-line);
+  border-radius: var(--hm-r-md);
+  box-shadow: var(--hm-shadow-1);
+  overflow: hidden;
+  transition: transform 0.22s var(--hm-ease), box-shadow 0.22s var(--hm-ease);
+}
+.hm-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--hm-shadow-2);
+}
+.hm-stat::after {
+  content: "";
+  position: absolute;
+  right: -34px;
+  top: -34px;
+  width: 98px;
+  height: 98px;
+  border-radius: 50%;
+  background: var(--hm-blue-soft);
+  opacity: 0.7;
+}
+.hm-stat__label {
+  position: relative;
+  z-index: 1;
+  font-size: 12.5px;
+  color: var(--hm-muted);
+}
+.hm-stat__value {
+  position: relative;
+  z-index: 1;
+  margin-top: 6px;
+  font-family: var(--hm-font-num);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--hm-ink);
+}
+.hm-stat__foot {
+  position: relative;
+  z-index: 1;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--hm-muted);
+}
+.hm-stat--violet::after {
+  background: var(--hm-violet-soft);
+}
+.hm-stat--success::after {
+  background: var(--hm-success-soft);
+}
+.hm-stat--warn::after {
+  background: var(--hm-warn-soft);
+}
+
+/* 空状态 / 加载 / 骨架 */
+.hm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 56px 24px;
+  text-align: center;
+  color: var(--hm-muted);
+  font-size: 13.5px;
+}
+.hm-empty__icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: var(--hm-blue-soft);
+  color: var(--hm-blue);
+  font-size: 26px;
+}
+.hm-empty h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--hm-ink);
+}
+.hm-empty p {
+  margin: 0;
+  max-width: 420px;
+}
+
+.hm-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 20px;
+  color: var(--hm-muted);
+  font-size: 13.5px;
+}
+.hm-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid var(--hm-line-strong);
+  border-top-color: var(--hm-blue);
+  border-radius: 50%;
+  animation: hm-adm-spin 0.7s linear infinite;
+}
+@keyframes hm-adm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 通知条 */
+.hm-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 15px;
+  border-radius: var(--hm-r-sm);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.hm-notice--info {
+  background: var(--hm-blue-soft);
+  color: #24409E;
+}
+.hm-notice--warn {
+  background: var(--hm-warn-soft);
+  color: var(--hm-warn);
+}
+.hm-notice--danger {
+  background: var(--hm-danger-soft);
+  color: var(--hm-danger);
+}
+.hm-notice--success {
+  background: var(--hm-success-soft);
+  color: #067647;
+}
+
+/* 标签 */
+.hm-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: var(--hm-r-pill);
+  background: var(--hm-blue-soft);
+  color: var(--hm-blue);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.hm-tag--success {
+  background: var(--hm-success-soft);
+  color: var(--hm-success);
+}
+.hm-tag--danger {
+  background: var(--hm-danger-soft);
+  color: var(--hm-danger);
+}
+.hm-tag--muted {
+  background: rgba(17, 27, 54, 0.06);
+  color: var(--hm-muted);
+}
+
+/* 按钮（后台自用，不依赖 Element） */
+.hm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 18px;
+  border: 1.5px solid transparent;
+  border-radius: var(--hm-r-sm);
+  background: var(--hm-ink);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s var(--hm-ease), color 0.18s var(--hm-ease),
+              border-color 0.18s var(--hm-ease);
+}
+.hm-btn--primary {
+  background: var(--hm-blue);
+}
+.hm-btn--primary:hover {
+  background: var(--hm-blue-700);
+}
+.hm-btn--ghost {
+  background: #fff;
+  color: var(--hm-text);
+  border-color: var(--hm-line-strong);
+}
+.hm-btn--ghost:hover {
+  border-color: var(--hm-ink);
+}
+.hm-btn--block {
+  display: flex;
+  width: 100%;
+}
+.hm-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+/* ==========================================================================
+   5. Element UI 主题覆写（统一到品牌色板）
+   ========================================================================== */
+#app .el-button--primary {
+  background-color: var(--hm-blue);
+  border-color: var(--hm-blue);
+}
+#app .el-button--primary:hover,
+#app .el-button--primary:focus {
+  background-color: var(--hm-blue-700);
+  border-color: var(--hm-blue-700);
+}
+#app .el-button--success {
+  background-color: var(--hm-success);
+  border-color: var(--hm-success);
+}
+#app .el-button--danger {
+  background-color: var(--hm-danger);
+  border-color: var(--hm-danger);
+}
+#app .el-button.is-plain {
+  background: #fff;
+}
+#app .el-button.is-plain.el-button--primary {
+  color: var(--hm-blue);
+  border-color: rgba(49, 94, 251, 0.4);
+}
+#app .el-button.is-plain.el-button--primary:hover {
+  background: var(--hm-blue);
+  border-color: var(--hm-blue);
+  color: #fff;
+}
+#app .el-button.is-plain.el-button--danger {
+  color: var(--hm-danger);
+  border-color: rgba(217, 45, 32, 0.4);
+}
+#app .el-button.is-plain.el-button--danger:hover {
+  background: var(--hm-danger);
+  border-color: var(--hm-danger);
+  color: #fff;
+}
+#app .el-button.is-plain.el-button--success {
+  color: var(--hm-success);
+  border-color: rgba(14, 159, 110, 0.4);
+}
+#app .el-button.is-plain.el-button--success:hover {
+  background: var(--hm-success);
+  border-color: var(--hm-success);
+  color: #fff;
+}
+
+#app .el-button--text {
+  color: var(--hm-blue);
+}
+
+/* 输入框焦点色 */
+#app .el-input__inner:focus,
+#app .el-textarea__inner:focus {
+  border-color: var(--hm-blue);
+}
+#app .el-input__inner:hover {
+  border-color: rgba(49, 94, 251, 0.45);
+}
+
+/* 卡片：去掉默认阴影，统一圆角与描边 */
+#app .el-card {
+  border: 1px solid var(--hm-line);
+  border-radius: var(--hm-r-md);
+  box-shadow: var(--hm-shadow-1) !important;
+}
+#app .el-card__header {
+  border-bottom: 1px solid var(--hm-line);
+}
+
+/* 表格 */
+#app .el-table th.el-table__cell {
+  background: #F7F9FC !important;
+  color: var(--hm-text-2);
+  font-weight: 600;
+}
+#app .el-table th.el-table__cell > .cell {
+  font-size: 12.5px;
+}
+#app .el-table td.el-table__cell {
+  padding: 10px 0;
+}
+#app .el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
+  background: #FAFBFE;
+}
+#app .el-table::before {
+  background-color: var(--hm-line);
+}
+#app .el-table__body-wrapper {
+  border-radius: 0;
+}
+
+/* 分页 */
+#app .el-pagination.is-background .el-pager li:not(.disabled).active {
+  background-color: var(--hm-blue);
+}
+#app .el-pagination.is-background .el-pager li:not(.disabled):hover {
+  color: var(--hm-blue);
+}
+
+/* 弹窗 */
+#app .el-dialog {
+  padding: 0;
+  border-radius: var(--hm-r-md);
+  overflow: hidden;
+}
+#app .el-dialog__header {
+  padding: 18px 24px;
+  margin: 0;
+  border-bottom: 1px solid var(--hm-line);
+  background: #F7F9FC;
+}
+#app .el-dialog__title {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--hm-ink);
+}
+#app .el-dialog__body {
+  padding: 22px 24px;
+}
+#app .el-dialog__footer {
+  padding: 14px 24px 20px;
+  border-top: 1px solid var(--hm-line);
+}
+
+/* 开关 / 单选 / 复选 / 下拉选中色 */
+#app .el-switch.is-checked .el-switch__core {
+  background-color: var(--hm-blue);
+  border-color: var(--hm-blue);
+}
+#app .el-radio__input.is-checked .el-radio__inner,
+#app .el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--hm-blue);
+  border-color: var(--hm-blue);
+}
+#app .el-radio__input.is-checked + .el-radio__label,
+#app .el-checkbox__input.is-checked + .el-checkbox__label {
+  color: var(--hm-blue);
+}
+#app .el-select-dropdown__item.selected,
+#app .el-dropdown-menu__item:not(.is-disabled):hover {
+  color: var(--hm-blue);
+  background-color: var(--hm-blue-soft);
+}
+#app .el-date-table td.current:not(.disabled) span {
+  background-color: var(--hm-blue);
+}
+#app .el-color-picker__trigger {
+  border-radius: var(--hm-r-xs);
+}
+
+
+/* ==========================================================================
+   6. 后台 Toast（替代 Element 的 $message，失败时也能提示）
+   ========================================================================== */
+.hm-adm-toast-host {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+.hm-adm-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(90vw, 460px);
+  padding: 12px 18px;
+  border-radius: var(--hm-r-sm);
+  background: var(--hm-ink);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 500;
+  box-shadow: var(--hm-shadow-3);
+  animation: hm-adm-toast-in 0.26s var(--hm-ease);
+}
+.hm-adm-toast__icon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 12px;
+  font-weight: 700;
+}
+.hm-adm-toast--success .hm-adm-toast__icon {
+  background: var(--hm-success);
+}
+.hm-adm-toast--error .hm-adm-toast__icon {
+  background: var(--hm-danger);
+}
+.hm-adm-toast--warn .hm-adm-toast__icon {
+  background: #DC6803;
+}
+.hm-adm-toast.is-leaving {
+  animation: hm-adm-toast-out 0.22s var(--hm-ease) forwards;
+}
+@keyframes hm-adm-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+@keyframes hm-adm-toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+
+/* ==========================================================================
+   7. 登录页（沉浸式深色）
+   ========================================================================== */
+body.hm-adm-auth {
+  background: linear-gradient(150deg, #16214A 0%, #111B36 55%, #0C1428 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+}
+body.hm-adm-auth #app {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.hm-login {
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.hm-login__brand {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 56px 62px;
+  color: #fff;
+  overflow: hidden;
+}
+.hm-login__brand::before {
+  content: "";
+  position: absolute;
+  right: -130px;
+  top: -120px;
+  width: 440px;
+  height: 440px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(124, 77, 255, 0.48), transparent 62%);
+  filter: blur(10px);
+}
+.hm-login__brand::after {
+  content: "";
+  position: absolute;
+  left: -110px;
+  bottom: -150px;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(49, 94, 251, 0.42), transparent 64%);
+  filter: blur(10px);
+}
+.hm-login__brand > * {
+  position: relative;
+  z-index: 1;
+}
+.hm-login__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+}
+.hm-login__logo .hm-admin__brand-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+}
+.hm-login__logo b {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+.hm-login__logo span {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.5);
+}
+.hm-login__pitch h1 {
+  margin: 0;
+  font-size: clamp(28px, 3.1vw, 40px);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  color: #fff;
+}
+.hm-login__pitch h1 strong {
+  background: linear-gradient(100deg, #8FB0FF 0%, #C4A9FF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hm-login__pitch p {
+  margin: 18px 0 0;
+  max-width: 430px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 15px;
+  line-height: 1.75;
+}
+.hm-login__points {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 30px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.hm-login__points li {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.8);
+}
+.hm-login__points i {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #8FB0FF;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+.hm-login__foot {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.36);
+}
+
+.hm-login__form-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 40px;
+  background: var(--hm-bg);
+  border-top-left-radius: 40px;
+  border-bottom-left-radius: 40px;
+}
+.hm-login__card {
+  width: 100%;
+  max-width: 384px;
+}
+.hm-login__card-head {
+  margin-bottom: 24px;
+}
+.hm-login__card-head h2 {
+  margin: 0;
+  font-size: 25px;
+  letter-spacing: -0.02em;
+  color: var(--hm-ink);
+}
+.hm-login__card-head p {
+  margin: 8px 0 0;
+  color: var(--hm-muted);
+  font-size: 13.5px;
+}
+
+/* 表单 */
+.hm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hm-field + .hm-field {
+  margin-top: 17px;
+}
+.hm-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hm-text-2);
+}
+.hm-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 14px;
+  background: #fff;
+  border: 1.5px solid var(--hm-line-strong);
+  border-radius: var(--hm-r-sm);
+  transition: border-color 0.18s var(--hm-ease), box-shadow 0.18s var(--hm-ease);
+}
+.hm-control:focus-within {
+  border-color: var(--hm-blue);
+  box-shadow: 0 0 0 4px var(--hm-blue-soft);
+}
+.hm-control input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--hm-text);
+  font-family: inherit;
+  font-size: 14.5px;
+  outline: none;
+}
+.hm-control input::placeholder {
+  color: #98A2B8;
+}
+.hm-control__suffix {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--hm-r-xs);
+  background: transparent;
+  color: var(--hm-muted);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.hm-control__suffix:hover {
+  color: var(--hm-blue);
+  background: var(--hm-blue-soft);
+}
+.hm-control.is-error {
+  border-color: var(--hm-danger);
+}
+.hm-control__icon {
+  display: inline-flex;
+  color: var(--hm-muted);
+}
+.hm-hint {
+  font-size: 12px;
+  color: var(--hm-muted);
+}
+.hm-login__submit {
+  height: 48px;
+  margin-top: 24px;
+  font-size: 15px;
+}
+.hm-login__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0 0;
+  font-size: 12.5px;
+  color: var(--hm-muted);
+}
+
+
+/* ==========================================================================
+   8. 响应式
+   ========================================================================== */
+@media (max-width: 1280px) {
+  .hm-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  .hm-login {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hm-login__brand {
+    padding: 44px 40px;
+  }
+}
+
+@media (max-width: 860px) {
+  /* 侧栏变为抽屉式的“仅图标”模式，避免小屏挤压内容 */
+  .hm-admin__side {
+    flex-basis: var(--hm-side-w-mini);
+    width: var(--hm-side-w-mini);
+  }
+  .hm-admin__brand {
+    justify-content: center;
+    padding: 0;
+  }
+  .hm-admin__brand-text,
+  .hm-nav-item__text,
+  .hm-nav-item__badge,
+  .hm-admin__nav-group,
+  .hm-admin__side-foot {
+    display: none;
+  }
+  .hm-nav-item {
+    justify-content: center;
+    padding: 0;
+    gap: 0;
+  }
+  .hm-admin__content {
+    padding: 16px;
+  }
+  .hm-admin__topbar {
+    padding: 0 16px;
+  }
+  .hm-login {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hm-login__brand {
+    display: none;
+  }
+  .hm-login__form-side {
+    border-radius: 0;
+    padding: 32px 22px;
+    min-height: 100vh;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .hm-stat-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hm-admin__title span {
+    display: none;
+  }
+}

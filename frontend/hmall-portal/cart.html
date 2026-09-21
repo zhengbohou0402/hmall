@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="theme-color" content="#111B36"/>
+  <title>购物车 · 黑马商城</title>
+  <meta name="description" content="查看并结算你在黑马商城挑选的好物。"/>
+
+  <link rel="stylesheet" type="text/css" href="css/design-system.css?v=20260920"/>
+
+  <!-- 本页专属布局（不重复定义设计令牌 / 组件，仅排版） -->
+  <style>
+    .hm-cart-list__head,
+    .hm-cart-row {
+      display: grid;
+      grid-template-columns: 40px 88px minmax(0, 1fr) 110px 132px 110px 64px;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 22px;
+    }
+    .hm-cart-list__head {
+      background: #F7F9FC;
+      border-bottom: 1px solid var(--hm-line);
+      color: var(--hm-text-2);
+      font-size: 12.5px;
+      font-weight: 600;
+      padding-top: 13px;
+      padding-bottom: 13px;
+    }
+    .hm-cart-row {
+      border-bottom: 1px solid var(--hm-line);
+      transition: background 0.18s var(--hm-ease);
+    }
+    .hm-cart-row:last-child {
+      border-bottom: 0;
+    }
+    .hm-cart-row:hover {
+      background: #FAFBFE;
+    }
+    .hm-cart-row.is-disabled {
+      opacity: 0.62;
+    }
+    .hm-cart-row__media {
+      width: 88px;
+      height: 88px;
+      border-radius: var(--hm-r-sm);
+      background: var(--hm-grad-surface);
+      overflow: hidden;
+      display: block;
+    }
+    .hm-cart-row__media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .hm-cart-row__media span {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      color: var(--hm-muted);
+      font-size: 11px;
+    }
+    .hm-cart-row__name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--hm-ink);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .hm-cart-row__name:hover {
+      color: var(--hm-blue);
+    }
+    .hm-cart-row__spec {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 10px;
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--hm-muted);
+    }
+    .hm-cart-row__flags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .hm-cart-row__del {
+      display: flex;
+      justify-content: flex-end;
+    }
+    @media (max-width: 900px) {
+      .hm-cart-list__head {
+        display: none;
+      }
+      .hm-cart-row {
+        grid-template-columns: 34px 76px minmax(0, 1fr);
+        grid-template-areas:
+          "check media name"
+          "qty   qty   qty"
+          "foot  foot  foot";
+        row-gap: 12px;
+        padding: 16px;
+      }
+      .hm-cart-row > *:nth-child(1) { grid-area: check; }
+      .hm-cart-row > *:nth-child(2) { grid-area: media; }
+      .hm-cart-row > *:nth-child(3) { grid-area: name; }
+      .hm-cart-row > *:nth-child(4) { grid-area: qty; }
+      .hm-cart-row__del { grid-column: 1 / -1; justify-content: flex-start; }
+      .hm-cart-row__media { width: 76px; height: 76px; }
+    }
+  </style>
+</head>
+
+<body class="hm-page">
+
+<a class="hm-skip" href="#hm-main">跳到主要内容</a>
+
+<div id="cartApp" v-cloak>
+
+  <hm-header active="cart"></hm-header>
+
+  <main class="hm-main" id="hm-main">
+    <div class="hm-shell">
+
+      <nav class="hm-crumb" aria-label="面包屑">
+        <a href="/">首页</a>
+        <i>/</i>
+        <b>我的购物车</b>
+      </nav>
+
+      <div class="hm-page-head">
+        <div>
+          <h1>我的购物车</h1>
+          <p class="hm-page-head__sub" v-if="carts.length">
+            共 <b class="hm-num">{{ carts.length }}</b> 种商品，已选择
+            <b class="hm-num">{{ selectedCarts.length }}</b> 种
+          </p>
+          <p class="hm-page-head__sub" v-else>把喜欢的好物先放这里，结算时再决定。</p>
+        </div>
+        <a class="hm-btn hm-btn--ghost hm-btn--sm" href="/search.html">继续挑选</a>
+      </div>
+
+      <!-- 加载中 -->
+      <div class="hm-loading" v-if="loading">
+        <span class="hm-spinner" aria-hidden="true"></span>
+        <span>正在读取你的购物车…</span>
+      </div>
+
+      <!-- 读取失败：给出真实错误 + 重试 -->
+      <div class="hm-panel" v-else-if="error">
+        <div class="hm-empty">
+          <span class="hm-empty__icon" aria-hidden="true">!</span>
+          <h3>购物车加载失败</h3>
+          <p>{{ error }}</p>
+          <div class="hm-empty__actions">
+            <button class="hm-btn hm-btn--primary hm-btn--sm" type="button" @click="loadCarts(false)">
+              重新加载
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 空购物车：空状态，不再 alert + 强制跳转 -->
+      <div class="hm-panel" v-else-if="!carts.length">
+        <div class="hm-empty">
+          <span class="hm-empty__icon" aria-hidden="true">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 5h2l2.2 10.2a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.5L21 8H7"></path>
+              <circle cx="10" cy="20" r="1.3"></circle>
+              <circle cx="18" cy="20" r="1.3"></circle>
+            </svg>
+          </span>
+          <h3>购物车还是空的</h3>
+          <p>去挑几件喜欢的商品吧，加入购物车后就能在这里一起结算。</p>
+          <div class="hm-empty__actions">
+            <a class="hm-btn hm-btn--primary hm-btn--sm" href="/search.html">去逛逛全部商品</a>
+            <a class="hm-btn hm-btn--ghost hm-btn--sm" href="/">返回首页</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 正常购物车 -->
+      <div class="hm-split" v-else>
+
+        <!-- 左：商品列表 -->
+        <section class="hm-panel hm-panel--flush">
+          <div class="hm-cart-list">
+
+            <div class="hm-cart-list__head">
+              <label class="hm-check" style="gap: 0">
+                <input type="checkbox" v-model="selectAll" :disabled="!enableCarts.length"
+                       aria-label="全选"/>
+              </label>
+              <span>商品</span>
+              <span>商品信息</span>
+              <span>单价</span>
+              <span>数量</span>
+              <span>小计</span>
+              <span style="text-align: right">操作</span>
+            </div>
+
+            <div class="hm-cart-row"
+                 v-for="c in carts"
+                 :key="c.id"
+                 :class="{ 'is-disabled': c.status !== 1 || c.num > c.stock }">
+
+              <label class="hm-check" style="gap: 0">
+                <input type="checkbox"
+                       v-model="selectedCarts"
+                       :value="c"
+                       :disabled="(c.status != null && c.status !== 1) || c.stock < c.num"
+                       :aria-label="'选择 ' + c.name"/>
+              </label>
+
+              <a class="hm-cart-row__media" href="/search.html" :aria-label="c.name">
+                <img v-if="c.image" :src="c.image" :alt="c.name" @error="onImgError(c)"/>
+                <span v-else>暂无图片</span>
+              </a>
+
+              <div>
+                <a class="hm-cart-row__name" href="/search.html">{{ c.name }}</a>
+
+                <div class="hm-cart-row__spec" v-if="specList(c).length">
+                  <span v-for="(s, i) in specList(c)" :key="'sp' + i">
+                    <b style="font-weight: 600; color: var(--hm-text-2)">{{ s.k }}</b>：{{ s.v }}
+                  </span>
+                </div>
+
+                <div class="hm-cart-row__flags">
+                  <span class="hm-tag hm-tag--success" v-if="c.newPrice && c.newPrice < c.price">
+                    降价 ￥{{ price(c.price - c.newPrice) }}
+                  </span>
+                  <span class="hm-tag hm-tag--danger" v-if="c.status != null && c.status !== 1">已下架</span>
+                  <span class="hm-tag hm-tag--warn" v-if="(c.status == null || c.status === 1) && c.num > c.stock">
+                    库存不足（仅剩 {{ c.stock }} 件）
+                  </span>
+                  <span class="hm-tag hm-tag--muted" v-if="(c.status == null || c.status === 1) && c.stock >= c.num">
+                    库存 {{ c.stock }} 件
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <span class="hm-price hm-price--sm" v-if="c.newPrice && c.newPrice < c.price">
+                  <i>￥</i>{{ price(c.newPrice) }}
+                </span>
+                <span class="hm-price hm-price--sm hm-price--muted"
+                      v-else-if="c.newPrice && c.newPrice >= c.price" style="display: none"></span>
+                <span class="hm-price hm-price--sm"
+                      v-if="!(c.newPrice && c.newPrice < c.price)">
+                  <i>￥</i>{{ price(c.price) }}
+                </span>
+                <div style="font-size: 12px; color: var(--hm-muted); text-decoration: line-through"
+                     v-if="c.newPrice && c.newPrice < c.price">
+                  ￥{{ price(c.price) }}
+                </div>
+              </div>
+
+              <div class="hm-qty">
+                <button type="button" @click="decrement(c)" :disabled="c.num <= 1 || busy"
+                        aria-label="减少数量">−</button>
+                <input type="text" inputmode="numeric" v-model.number="c.num"
+                       @change="commitNum(c)"
+                       :disabled="c.status != null && c.status !== 1" :aria-label="'数量，' + c.name"/>
+                <button type="button" @click="increment(c)" :disabled="c.num >= c.stock || busy"
+                        aria-label="增加数量">+</button>
+              </div>
+
+              <div>
+                <span class="hm-price hm-price--sm">
+                  <i>￥</i>{{ price(unitPrice(c) * c.num) }}
+                </span>
+              </div>
+
+              <div class="hm-cart-row__del">
+                <button type="button" class="hm-btn hm-btn--muted" @click="removeOne(c)">删除</button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- 底部批量操作 -->
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;
+                      padding: 16px 22px; border-top: 1px solid var(--hm-line)">
+            <label class="hm-check">
+              <input type="checkbox" v-model="selectAll" :disabled="!enableCarts.length"/>
+              <span>全选（{{ enableCarts.length }} 件可结算）</span>
+            </label>
+            <button type="button" class="hm-btn hm-btn--muted"
+                    :disabled="!selectedCarts.length" @click="removeSelected">
+              删除选中商品
+            </button>
+          </div>
+        </section>
+
+        <!-- 右：结算面板 -->
+        <aside class="hm-panel hm-panel--sticky">
+          <div class="hm-panel__title" style="margin-bottom: 18px">结算信息</div>
+
+          <div class="hm-sum-line">
+            <span>已选商品</span>
+            <b>{{ selectedCarts.length }} 种 / {{ selectedCount }} 件</b>
+          </div>
+          <div class="hm-sum-line">
+            <span>商品总额</span>
+            <b>￥{{ price(totalPrice) }}</b>
+          </div>
+          <div class="hm-sum-line" v-if="savedAmount > 0">
+            <span>比加入时节省</span>
+            <b style="color: var(--hm-success)">- ￥{{ price(savedAmount) }}</b>
+          </div>
+          <div class="hm-sum-line">
+            <span>运费</span>
+            <b>￥0.00</b>
+          </div>
+
+          <div class="hm-sum-line hm-sum-line--total">
+            <span>应付金额</span>
+            <span class="hm-price"><i>￥</i>{{ price(totalPrice) }}</span>
+          </div>
+
+          <button type="button"
+                  class="hm-btn hm-btn--primary hm-btn--lg hm-btn--block"
+                  style="margin-top: 20px"
+                  :class="{ 'is-loading': busy }"
+                  :disabled="!selectedCarts.length || busy"
+                  @click="toCheckout">
+            去结算
+            <span class="hm-btn__arrow" aria-hidden="true">→</span>
+          </button>
+
+          <p class="hm-hint" style="margin-top: 12px; text-align: center"
+             v-if="selectedCarts.length !== enableCarts.length && enableCarts.length">
+            有 {{ enableCarts.length - selectedCarts.length }} 件可结算商品未选中
+          </p>
+          <p class="hm-notice hm-notice--warn" style="margin-top: 14px" v-if="hasUnavailable">
+            标记为「已下架」或「库存不足」的商品无法结算，请先调整数量或删除。
+          </p>
+        </aside>
+
+      </div>
+    </div>
+  </main>
+
+  <hm-footer></hm-footer>
+
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/common.js?v=20260920"></script>
+<script src="./js/modern-ui.js?v=20260920"></script>
+<script src="./js/modern-cart.js?v=20260921"></script>
+
+</body>
+
+</html>

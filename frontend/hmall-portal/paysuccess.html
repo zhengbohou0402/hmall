@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="theme-color" content="#111B36"/>
+  <title>支付结果 · 黑马商城</title>
+  <meta name="description" content="查看本次订单的支付结果。"/>
+
+  <link rel="stylesheet" type="text/css" href="css/design-system.css?v=20260920"/>
+
+  <!-- 本页专属布局（不重复定义设计令牌 / 组件，仅排版） -->
+  <style>
+    .hm-result {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .hm-result__head {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+    }
+    .hm-result__icon {
+      display: grid;
+      place-items: center;
+      width: 88px;
+      height: 88px;
+      margin-bottom: 14px;
+      border-radius: 50%;
+      background: var(--hm-success-soft);
+      color: var(--hm-success);
+      box-shadow: 0 0 0 10px rgba(14, 159, 110, 0.08);
+    }
+    .hm-result__icon svg {
+      width: 42px;
+      height: 42px;
+    }
+    .hm-result__icon--warn {
+      background: var(--hm-warn-soft);
+      color: var(--hm-warn);
+      box-shadow: 0 0 0 10px rgba(181, 71, 8, 0.08);
+    }
+    .hm-result__icon--danger {
+      background: var(--hm-danger-soft);
+      color: var(--hm-danger);
+      box-shadow: 0 0 0 10px rgba(217, 45, 32, 0.08);
+    }
+    .hm-result__head h1 {
+      font-size: 26px;
+      letter-spacing: -0.02em;
+    }
+    .hm-result__head p {
+      color: var(--hm-muted);
+      font-size: 13.5px;
+      max-width: 440px;
+    }
+    .hm-result__amount {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 4px;
+      margin: 22px 0 0;
+      font-family: var(--hm-font-num);
+      font-size: 40px;
+      font-weight: 700;
+      color: var(--hm-ink);
+      letter-spacing: -0.03em;
+    }
+    .hm-result__amount i {
+      font-style: normal;
+      font-size: 21px;
+    }
+    .hm-result__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 28px;
+    }
+  </style>
+</head>
+
+<body class="hm-page">
+
+<a class="hm-skip" href="#hm-main">跳到主要内容</a>
+
+<div id="resultApp" v-cloak>
+
+  <hm-header></hm-header>
+
+  <main class="hm-main" id="hm-main">
+    <div class="hm-shell">
+
+      <nav class="hm-crumb" aria-label="面包屑">
+        <a href="/">首页</a>
+        <i>/</i>
+        <a href="/cart.html">我的购物车</a>
+        <i>/</i>
+        <b>支付结果</b>
+      </nav>
+
+      <hm-steps :current="4"></hm-steps>
+
+      <!-- 缺少订单号 -->
+      <div class="hm-panel hm-result" v-if="!orderId">
+        <div class="hm-empty">
+          <span class="hm-empty__icon" aria-hidden="true">!</span>
+          <h3>没有指定订单</h3>
+          <p>地址栏缺少 <code>?orderId=订单号</code> 参数。</p>
+          <div class="hm-empty__actions">
+            <a class="hm-btn hm-btn--primary hm-btn--sm" href="/">返回首页</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 加载中 -->
+      <div class="hm-loading" v-else-if="loading">
+        <span class="hm-spinner" aria-hidden="true"></span>
+        <span>正在读取订单信息…</span>
+      </div>
+
+      <!-- 加载失败 -->
+      <div class="hm-panel hm-result" v-else-if="error">
+        <div class="hm-empty">
+          <span class="hm-empty__icon" aria-hidden="true">!</span>
+          <h3>订单信息读取失败</h3>
+          <p>{{ error }}</p>
+          <div class="hm-empty__actions">
+            <button class="hm-btn hm-btn--primary hm-btn--sm" type="button" @click="load">重新加载</button>
+            <a class="hm-btn hm-btn--ghost hm-btn--sm" href="/">返回首页</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 结果 -->
+      <div class="hm-panel hm-result" v-else-if="order">
+
+        <div class="hm-result__head">
+          <!-- 已付款 -->
+          <template v-if="isPaid">
+            <span class="hm-result__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12.5l4.5 4.5L19 7.5"></path>
+              </svg>
+            </span>
+            <h1>支付成功</h1>
+            <p>订单已付款，我们会尽快为你安排发货。感谢你在黑马商城的下单。</p>
+          </template>
+
+          <!-- 未付款（直接访问本页 / 支付未完成） -->
+          <template v-else-if="order.status === 1">
+            <span class="hm-result__icon hm-result__icon--warn" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                   stroke-linecap="round">
+                <path d="M12 7v7"></path>
+                <path d="M12 17.5v.01"></path>
+              </svg>
+            </span>
+            <h1>这笔订单还未支付</h1>
+            <p>订单状态为「未付款」，可能是支付流程尚未完成。你可以返回收银台继续支付。</p>
+          </template>
+
+          <!-- 已取消 -->
+          <template v-else>
+            <span class="hm-result__icon hm-result__icon--danger" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                   stroke-linecap="round">
+                <path d="M7 7l10 10"></path>
+                <path d="M17 7L7 17"></path>
+              </svg>
+            </span>
+            <h1>订单当前状态：{{ statusText }}</h1>
+            <p>该订单不能视为支付成功。如有疑问请核对订单状态。</p>
+          </template>
+
+          <div class="hm-result__amount">
+            <i>￥</i>{{ price(order.totalFee) }}
+          </div>
+        </div>
+
+        <div style="margin-top: 26px">
+          <div class="hm-kv">
+            <span>订单编号</span>
+            <span class="hm-num">{{ order.id }}</span>
+          </div>
+          <div class="hm-kv">
+            <span>订单状态</span>
+            <span>{{ statusText }}</span>
+          </div>
+          <div class="hm-kv">
+            <span>支付方式</span>
+            <span>{{ paymentTypeText }}</span>
+          </div>
+          <div class="hm-kv">
+            <span>下单时间</span>
+            <span>{{ formatTime(order.createTime) }}</span>
+          </div>
+          <div class="hm-kv" v-if="order.payTime">
+            <span>支付时间</span>
+            <span>{{ formatTime(order.payTime) }}</span>
+          </div>
+          <div class="hm-kv" v-if="isPaid && order.payTime">
+            <span>预计送达</span>
+            <span>{{ sendDate }}</span>
+          </div>
+        </div>
+
+        <div class="hm-result__actions">
+          <template v-if="isPaid">
+            <a class="hm-btn hm-btn--primary" href="/search.html">继续购物</a>
+            <a class="hm-btn hm-btn--ghost" href="/">返回首页</a>
+          </template>
+          <template v-else-if="order.status === 1">
+            <a class="hm-btn hm-btn--primary" :href="'/pay.html?id=' + order.id">继续支付</a>
+            <a class="hm-btn hm-btn--ghost" href="/cart.html">返回购物车</a>
+          </template>
+          <template v-else>
+            <a class="hm-btn hm-btn--primary" href="/">返回首页</a>
+            <a class="hm-btn hm-btn--ghost" href="/cart.html">返回购物车</a>
+          </template>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <hm-footer></hm-footer>
+
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/common.js?v=20260920"></script>
+<script src="./js/modern-ui.js?v=20260920"></script>
+<script src="./js/modern-paysuccess.js?v=20260920"></script>
+
+</body>
+
+</html>

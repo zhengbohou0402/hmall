@@ -1,0 +1,50 @@
+server:
+  port: 8080
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: item-service
+          uri: lb://item-service
+          predicates: [Path=/items/**]
+        - id: cart-service
+          uri: lb://cart-service
+          predicates: [Path=/carts/**]
+        - id: user-service-users
+          uri: lb://user-service
+          predicates: [Path=/users/**]
+        - id: user-service-addresses
+          uri: lb://user-service
+          predicates: [Path=/addresses/**]
+        - id: trade-service
+          uri: lb://trade-service
+          predicates: [Path=/orders/**]
+        - id: pay-service
+          uri: lb://pay-service
+          predicates: [Path=/pay-orders/**]
+        - id: search-service
+          uri: lb://search-service
+          predicates: [Path=/search/**]
+    sentinel:
+      transport:
+        dashboard: localhost:8090
+hm:
+  jwt:
+    location: classpath:hmall.jks
+    alias: hmall
+    password: hmall123
+    tokenTTL: 30m
+  auth:
+    excludePaths:
+      - /search/**
+      - /users/login
+      - /users/login/sms
+      - /users/code
+      - /users/captcha
+      - /hi
+      - /ai/**
+    # 仅 GET 方法豁免鉴权：/items/{id} 的查询保持公开，但 /items 下的新增/修改/删除/扣减库存等写操作
+    # 与 GET /items/{id} 路径形状部分重叠（如 DELETE /items/{id}），必须通过 method 区分，不能整体放在 excludePaths
+    excludeGetPaths:
+      - /items/**
+      - /reviews/item/**

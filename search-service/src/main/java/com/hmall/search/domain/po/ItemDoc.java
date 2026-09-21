@@ -36,6 +36,9 @@ public class ItemDoc {
     @Schema(description = "是否是推广广告，true/false")
     private Boolean isAD;
 
+    /** 商品状态：1 上架、2 下架、3 删除。购物车结算需要据此排除不可售商品。 */
+    private Integer status;
+
     @Schema(description = "更新时间")
     private LocalDateTime updateTime;
 }

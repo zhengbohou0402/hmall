@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="theme-color" content="#111B36"/>
+  <title>登录 · 黑马商城</title>
+  <meta name="description" content="登录黑马商城，继续你的购物车与订单。"/>
+
+  <!-- 全局设计系统（用户端所有页面共用） -->
+  <link rel="stylesheet" type="text/css" href="css/design-system.css?v=20260920"/>
+</head>
+
+<body class="hm-page hm-page--auth">
+
+<div id="loginApp" v-cloak>
+
+  <main class="hm-main">
+    <div class="hm-auth">
+
+      <!-- ==================================================================
+           左：品牌区（沉浸式，深色渐变由 design-system.css 提供）
+           ================================================================== -->
+      <section class="hm-auth__brand">
+        <a class="hm-auth__logo" href="/">
+          <span class="hm-logo__mark">
+            <img src="./img/black-horse-mark.svg" alt="黑马商城"/>
+          </span>
+          <span>
+            <b>黑马商城</b>
+            <span>BLACK HORSE MALL</span>
+          </span>
+        </a>
+
+        <div class="hm-auth__pitch">
+          <h1>少一点犹豫，<br/><strong>多一点刚刚好。</strong></h1>
+          <p>登录后即可同步购物车、查看订单与余额，把你挑过的好物一次收齐。</p>
+
+          <ul class="hm-auth__points">
+            <li><i>1</i><span>购物车云端同步，换设备不丢</span></li>
+            <li><i>2</i><span>订单与物流全程可查</span></li>
+            <li><i>3</i><span>余额支付，一秒完成结算</span></li>
+          </ul>
+        </div>
+
+        <p class="hm-auth__foot">© 2026 黑马商城 · 教学演示项目</p>
+      </section>
+
+      <!-- ==================================================================
+           右：表单区
+           ================================================================== -->
+      <section class="hm-auth__form-side">
+        <div class="hm-auth__card">
+
+          <div class="hm-auth__card-head">
+            <h2>{{ mode === 'sms' ? '手机验证码登录' : '欢迎回来' }}</h2>
+            <p>{{ mode === 'sms' ? '输入手机号与验证码即可登录。' : '使用你的账号登录黑马商城。' }}</p>
+          </div>
+
+          <!-- 已登录提示（不自动跳转，避免用户无法切换账号） -->
+          <div class="hm-notice hm-notice--info" v-if="currentUser" style="margin-bottom: 20px">
+            <span aria-hidden="true">·</span>
+            <span>
+              你当前已登录为 <b>{{ currentUser.username }}</b>，
+              <a class="hm-link" href="javascript:;" @click.prevent="continueAs">继续前往</a>
+              或直接重新登录切换账号。
+            </span>
+          </div>
+
+          <!-- 登录模式切换 -->
+          <div class="hm-auth__tabs" role="tablist">
+            <button type="button" class="hm-auth__tab" :class="{ 'is-active': mode === 'password' }"
+                    role="tab" :aria-selected="mode === 'password'" @click="switchMode('password')">
+              账号密码登录
+            </button>
+            <button type="button" class="hm-auth__tab" :class="{ 'is-active': mode === 'sms' }"
+                    role="tab" :aria-selected="mode === 'sms'" @click="switchMode('sms')">
+              短信验证码登录
+            </button>
+          </div>
+
+          <!-- 错误提示 -->
+          <div class="hm-error" v-if="error" style="margin-bottom: 18px" role="alert">
+            <span aria-hidden="true">!</span>
+            <span>{{ error }}</span>
+          </div>
+
+          <!-- ============================ 账号密码登录 ============================ -->
+          <form v-if="mode === 'password'" @submit.prevent="loginByPassword" novalidate>
+            <div class="hm-field">
+              <label class="hm-label" for="username">用户名<span class="hm-req">*</span></label>
+              <div class="hm-control" :class="{ 'is-error': fieldError.username }">
+                <span class="hm-control__icon" aria-hidden="true">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="1.9" stroke-linecap="round">
+                    <circle cx="12" cy="8" r="3.6"></circle>
+                    <path d="M4.8 20a7.2 7.2 0 0 1 14.4 0"></path>
+                  </svg>
+                </span>
+                <input id="username" ref="username" type="text" v-model.trim="form.username"
+                       autocomplete="username" placeholder="请输入用户名"/>
+              </div>
+            </div>
+
+            <div class="hm-field">
+              <label class="hm-label" for="password">密码<span class="hm-req">*</span></label>
+              <div class="hm-control" :class="{ 'is-error': fieldError.password }">
+                <span class="hm-control__icon" aria-hidden="true">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="1.9" stroke-linecap="round">
+                    <rect x="4.5" y="10.5" width="15" height="9.5" rx="2.4"></rect>
+                    <path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7"></path>
+                  </svg>
+                </span>
+                <input id="password" :type="showPwd ? 'text' : 'password'" v-model="form.password"
+                       autocomplete="current-password" placeholder="请输入密码"/>
+                <button type="button" class="hm-control__suffix" @click="showPwd = !showPwd"
+                        :aria-label="showPwd ? '隐藏密码' : '显示密码'">
+                  {{ showPwd ? '隐藏' : '显示' }}
+                </button>
+              </div>
+            </div>
+
+            <div class="hm-auth__row">
+              <label class="hm-check">
+                <input type="checkbox" v-model="form.rememberMe"/>
+                <span>记住我</span>
+              </label>
+              <span style="color: var(--hm-muted)">忘记密码请联系管理员重置</span>
+            </div>
+
+            <button type="submit" class="hm-btn hm-btn--primary hm-btn--lg hm-btn--block"
+                    :class="{ 'is-loading': loading }" :disabled="loading">
+              {{ loading ? '正在登录…' : '登 录' }}
+            </button>
+          </form>
+
+          <!-- ============================ 短信验证码登录 ============================ -->
+          <form v-else @submit.prevent="loginBySms" novalidate>
+            <div class="hm-field">
+              <label class="hm-label" for="phone">手机号<span class="hm-req">*</span></label>
+              <div class="hm-control" :class="{ 'is-error': fieldError.phone }">
+                <span class="hm-control__icon" aria-hidden="true">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="1.9" stroke-linecap="round">
+                    <rect x="6.5" y="3" width="11" height="18" rx="2.4"></rect>
+                    <path d="M11 18h2"></path>
+                  </svg>
+                </span>
+                <input id="phone" type="tel" v-model.trim="smsForm.phone" maxlength="11"
+                       autocomplete="tel" placeholder="请输入 11 位手机号"/>
+              </div>
+            </div>
+
+            <div class="hm-field">
+              <label class="hm-label" for="captchaCode">图形验证码<span class="hm-req">*</span></label>
+              <div class="hm-control" :class="{ 'is-error': fieldError.captchaCode }">
+                <input id="captchaCode" type="text" v-model.trim="smsForm.captchaCode" maxlength="6"
+                       autocomplete="off" placeholder="请输入图中字符"/>
+                <!-- 真实接口 GET /users/captcha：点击可刷新 -->
+                <button type="button" class="hm-control__suffix" style="padding: 0; height: 34px; width: 96px"
+                        @click="loadCaptcha" :disabled="captchaLoading" title="点击刷新验证码">
+                  <img v-if="captchaImage" :src="captchaImage" alt="图形验证码"
+                       style="width: 96px; height: 34px; object-fit: contain; border-radius: 6px"/>
+                  <span v-else style="font-size: 12px; color: var(--hm-muted)">
+                    {{ captchaLoading ? '加载中' : '点击获取' }}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div class="hm-field">
+              <label class="hm-label" for="smsCode">短信验证码<span class="hm-req">*</span></label>
+              <div class="hm-control" :class="{ 'is-error': fieldError.code }">
+                <input id="smsCode" type="text" v-model.trim="smsForm.code" maxlength="6"
+                       autocomplete="one-time-code" placeholder="请输入短信验证码"/>
+                <button type="button" class="hm-control__suffix"
+                        :disabled="countdown > 0 || sendingCode" @click="sendSmsCode">
+                  {{ countdown > 0 ? countdown + 's 后重发' : (sendingCode ? '发送中…' : '获取验证码') }}
+                </button>
+              </div>
+              <p class="hm-hint">
+                需要先填写图形验证码；短信由后端 /users/code 接口真实下发。
+              </p>
+            </div>
+
+            <div class="hm-auth__row">
+              <span style="color: var(--hm-muted)">首次登录将自动注册为商城会员</span>
+            </div>
+
+            <button type="submit" class="hm-btn hm-btn--primary hm-btn--lg hm-btn--block"
+                    :class="{ 'is-loading': loading }" :disabled="loading">
+              {{ loading ? '正在登录…' : '登 录' }}
+            </button>
+          </form>
+
+          <p class="hm-auth__alt">
+            还没有账号？<a class="hm-link" href="javascript:;" @click.prevent="switchMode('sms')">
+              用手机号快捷注册登录
+            </a>
+          </p>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+</div>
+
+<!-- Vue 2 全量版 + axios + 公共工具 + 共享 UI + 本页逻辑（无需构建工具） -->
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/common.js?v=20260920"></script>
+<script src="./js/modern-ui.js?v=20260920"></script>
+<script src="./js/modern-login.js?v=20260920"></script>
+
+</body>
+
+</html>

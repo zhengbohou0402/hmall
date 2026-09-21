@@ -1,0 +1,29 @@
+/* ==========================================================================
+   黑马商城 · 搜索页补丁  modern-search-fix.css
+   说明：本文件只做「收敛式修补」，不重写 modern-search.css 的既有体系。
+   ========================================================================== */
+
+/* 1. 卡片媒体区约束：避免超长商品图把卡片撑破 */
+.ms-image { overflow: hidden !important; }
+.ms-image img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+}
+.ms-card-body { position: relative; z-index: 1; background: #fff; }
+
+/* 2. 品牌标识：使用品牌 SVG（img/black-horse-mark.svg）
+      —— 不再使用 <span>HM</span> 文字块，也不再依赖 background-image + font-size:0 的隐写方案，
+         这样品牌标识在 DOM 中可被直接校验。 */
+.ms-logo__mark {
+  display: block;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+}
+/* 兼容历史遗留写法：若其他位置仍存在 .ms-logo > span，一律隐藏其文字，避免出现第二条品牌路径 */
+.ms-logo > span { display: none !important; }
